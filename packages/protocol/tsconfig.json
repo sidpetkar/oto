@@ -2,7 +2,9 @@
   "extends": "@oto/tsconfig/node.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "module": "commonjs",
+    "moduleResolution": "node"
   },
   "include": ["src"]
 }
