@@ -1,28 +1,39 @@
 "use client";
 
-import { Check, Loader2, Clock } from "lucide-react";
+import { Check, Loader2, Clock, X } from "lucide-react";
 import type { TransferProgress as TProgress } from "../../lib/webrtc";
 import { formatSpeed } from "../../lib/format";
 
 interface TransferProgressProps {
   transfers: TProgress[];
   onClose: () => void;
+  onCancel?: () => void;
 }
 
-export function TransferProgress({ transfers, onClose }: TransferProgressProps) {
+export function TransferProgress({ transfers, onClose, onCancel }: TransferProgressProps) {
   const allDone = transfers.length > 0 && transfers.every((t) => t.status === "complete");
   const allWaiting = transfers.every((t) => t.status === "waiting");
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
       <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6">
-        <h2 className="font-medium text-lg mb-4">
-          {allDone
-            ? "Transfer Complete"
-            : allWaiting
-              ? "Waiting for Accept..."
-              : "Transferring..."}
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-medium text-lg">
+            {allDone
+              ? "Transfer Complete"
+              : allWaiting
+                ? "Waiting for Accept..."
+                : "Transferring..."}
+          </h2>
+          {!allDone && (
+            <button
+              onClick={onCancel ?? onClose}
+              className="w-8 h-8 rounded-full bg-[#f0f0f0] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
 
         <div className="space-y-4 mb-6 max-h-60 overflow-y-auto">
           {transfers.map((t) => (

@@ -25,9 +25,8 @@ function PlatformIcon({ platform }: { platform: string }) {
   }
 }
 
-// Distribute peers in a circle around center
 function getPeerPosition(index: number, total: number) {
-  const ringRadii = [28, 42]; // percentage from center
+  const ringRadii = [28, 42];
   const ring = index < 4 ? 0 : 1;
   const ringIndex = ring === 0 ? index : index - 4;
   const ringTotal = ring === 0 ? Math.min(total, 4) : total - 4;
@@ -42,30 +41,20 @@ function getPeerPosition(index: number, total: number) {
 export function Radar({ self, peers, onPeerClick }: RadarProps) {
   return (
     <div className="relative w-full max-w-[400px] mx-auto aspect-square">
-      {/* Rings */}
+      {/* 4 rings — all animate with staggered delays */}
       {[1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className="absolute rounded-full border border-[#e8e8e8]"
+          className="absolute rounded-full border border-[#e8e8e8] radar-ring"
           style={{
             width: `${i * 25}%`,
             height: `${i * 25}%`,
             left: `${50 - (i * 25) / 2}%`,
             top: `${50 - (i * 25) / 2}%`,
+            animationDelay: `${(i - 1) * 0.6}s`,
           }}
         />
       ))}
-
-      {/* Pulse ring */}
-      <div
-        className="absolute rounded-full border-2 border-[#1c1c1c]/20 radar-ring"
-        style={{
-          width: "25%",
-          height: "25%",
-          left: "37.5%",
-          top: "37.5%",
-        }}
-      />
 
       {/* Self in center */}
       <div
@@ -95,7 +84,7 @@ export function Radar({ self, peers, onPeerClick }: RadarProps) {
               animationDelay: `${i * 0.4}s`,
             }}
           >
-            <div className="w-10 h-10 rounded-xl bg-white border-2 border-[#e8e8e8] flex items-center justify-center shadow-sm group-hover:border-[#1c1c1c] group-hover:shadow-md transition-all">
+            <div className="w-10 h-10 rounded-full bg-white border-2 border-[#e8e8e8] flex items-center justify-center shadow-sm group-hover:border-[#1c1c1c] group-hover:shadow-md transition-all">
               <PlatformIcon platform={peer.platform} />
             </div>
             <span className="text-[10px] font-medium text-[#999] group-hover:text-[#1c1c1c] transition-colors">

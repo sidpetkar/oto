@@ -31,17 +31,17 @@ export function Header({ connected, receivedCount = 0, onReceivedClick }: Header
             </>
           )}
         </div>
-        {receivedCount > 0 && (
-          <button
-            onClick={onReceivedClick}
-            className="relative w-8 h-8 flex items-center justify-center"
-          >
-            <Inbox className="w-5 h-5 text-[#1c1c1c]" />
+        <button
+          onClick={onReceivedClick}
+          className="relative w-8 h-8 flex items-center justify-center"
+        >
+          <Inbox className="w-5 h-5 text-[#1c1c1c]" />
+          {receivedCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#1c1c1c] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
               {receivedCount > 9 ? "9+" : receivedCount}
             </span>
-          </button>
-        )}
+          )}
+        </button>
         <button className="w-8 h-8 flex items-center justify-center">
           <Settings className="w-5 h-5 text-[#1c1c1c]" />
         </button>

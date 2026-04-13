@@ -34,15 +34,12 @@ export default function AppClient() {
   const peersRef = useRef<DeviceInfo[]>([]);
   peersRef.current = peers;
 
-  // Pending files for the sender to send after receiver accepts
   const pendingFilesRef = useRef<File[]>([]);
 
-  // Listen for incoming session offers + session responses
   useEffect(() => {
     if (!client.current || !device) return;
 
     const unsub = client.current.onMessage((msg) => {
-      // Receiver gets a session-offer
       if (msg.type === "session-offer" && msg.offer.receiverId === device.id) {
         const currentPeers = peersRef.current;
         const sender = currentPeers.find((p) => p.id === msg.offer.senderId);
@@ -61,10 +58,8 @@ export default function AppClient() {
         });
       }
 
-      // Sender gets a session-response (accepted or rejected)
       if (msg.type === "session-response") {
         if (msg.response.accepted) {
-          // Receiver accepted — now start WebRTC as initiator
           const rtc = new WebRTCPeer({
             signaling: client.current!,
             sessionId: msg.response.sessionId,
@@ -75,7 +70,6 @@ export default function AppClient() {
           rtc.start();
           peerRef.current = rtc;
 
-          // Send the pending files
           const files = pendingFilesRef.current;
           pendingFilesRef.current = [];
           rtc.sendFiles(files).catch((err) => {
@@ -104,10 +98,8 @@ export default function AppClient() {
 
       const sessionId = `${device.id}-${selectedPeer.id}-${Date.now()}`;
 
-      // Stash files — we'll send them when the receiver accepts
       pendingFilesRef.current = files;
 
-      // Send session offer to the specific receiver
       client.current.send({
         type: "session-offer",
         offer: {
@@ -125,7 +117,6 @@ export default function AppClient() {
         },
       });
 
-      // Set a "waiting" state for the transfers
       setTransfers(
         files.map((f) => ({
           fileId: crypto.randomUUID(),
@@ -142,7 +133,8 @@ export default function AppClient() {
   const handleAcceptTransfer = useCallback(() => {
     if (!incomingOffer || !client.current || !device) return;
 
-    // Create WebRTC peer as receiver FIRST, then send acceptance
+    const offerSender = incomingOffer.sender;
+
     const rtc = new WebRTCPeer({
       signaling: client.current,
       sessionId: incomingOffer.sessionId,
@@ -158,7 +150,7 @@ export default function AppClient() {
             type: meta.type,
             url,
             timestamp: Date.now(),
-            from: incomingOffer.sender.otterName,
+            from: offerSender.otterName,
           },
           ...prev,
         ]);
@@ -167,7 +159,6 @@ export default function AppClient() {
     rtc.start();
     peerRef.current = rtc;
 
-    // Now tell the sender we accepted — they'll create their WebRTC + send RTC offer
     client.current.send({
       type: "session-response",
       response: {
@@ -213,12 +204,19 @@ export default function AppClient() {
     }
   };
 
+  const handleCancelTransfer = () => {
+    setShowTransfers(false);
+    setTransfers([]);
+    pendingFilesRef.current = [];
+    peerRef.current?.destroy();
+    peerRef.current = null;
+  };
+
   const handleCloseTransfers = () => {
     setShowTransfers(false);
     setTransfers([]);
     peerRef.current?.destroy();
     peerRef.current = null;
-    // If there are received files, show them
     if (receivedFiles.length > 0) {
       setShowReceived(true);
     }
@@ -268,21 +266,6 @@ export default function AppClient() {
         <Radar self={device} peers={peers} onPeerClick={handlePeerClick} />
       </div>
 
-      <div className="flex gap-3 px-5 py-5">
-        <button
-          onClick={() => setShowPinJoin(true)}
-          className="flex-1 py-3.5 rounded-2xl bg-[#f0f0f0] text-[#1c1c1c] font-medium text-sm hover:bg-[#e0e0e0] transition-colors"
-        >
-          Receive
-        </button>
-        <button
-          onClick={handleCreatePin}
-          className="flex-1 py-3.5 rounded-2xl bg-[#1c1c1c] text-white font-medium text-sm hover:bg-[#333] transition-colors"
-        >
-          Send
-        </button>
-      </div>
-
       {/* Modals */}
       {showSendModal && selectedPeer && (
         <SendModal
@@ -302,7 +285,11 @@ export default function AppClient() {
       )}
 
       {showTransfers && transfers.length > 0 && (
-        <TransferProgress transfers={transfers} onClose={handleCloseTransfers} />
+        <TransferProgress
+          transfers={transfers}
+          onClose={handleCloseTransfers}
+          onCancel={handleCancelTransfer}
+        />
       )}
 
       {showReceived && (
