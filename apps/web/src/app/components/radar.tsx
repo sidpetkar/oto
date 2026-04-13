@@ -41,17 +41,17 @@ function getPeerPosition(index: number, total: number) {
 export function Radar({ self, peers, onPeerClick }: RadarProps) {
   return (
     <div className="relative w-full max-w-[400px] mx-auto aspect-square">
-      {/* 4 rings — all animate with staggered delays */}
-      {[1, 2, 3, 4].map((i) => (
+      {/* 4 ripple rings — constant speed, evenly spaced, loop from center outward */}
+      {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="absolute rounded-full border border-[#e8e8e8] radar-ring"
+          className="absolute rounded-full border border-[#1c1c1c]/40 radar-ring"
           style={{
-            width: `${i * 25}%`,
-            height: `${i * 25}%`,
-            left: `${50 - (i * 25) / 2}%`,
-            top: `${50 - (i * 25) / 2}%`,
-            animationDelay: `${(i - 1) * 0.6}s`,
+            width: "100%",
+            height: "100%",
+            left: "50%",
+            top: "50%",
+            animationDelay: `${-i * 1.5}s`,
           }}
         />
       ))}
