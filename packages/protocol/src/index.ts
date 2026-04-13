@@ -1,17 +1,10 @@
 export type Platform = "android" | "ios" | "windows" | "mac" | "linux" | "browser";
 
 // Portable WebRTC types so this package compiles without DOM lib
-export interface RTCSessionDescriptionLike {
-  type?: string;
-  sdp?: string;
-  [key: string]: unknown;
-}
-export interface RTCIceCandidateLike {
-  candidate?: string;
-  sdpMid?: string | null;
-  sdpMLineIndex?: number | null;
-  [key: string]: unknown;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type RTCSessionDescriptionLike = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type RTCIceCandidateLike = any;
 
 export type TransferStatus =
   | "pending"
