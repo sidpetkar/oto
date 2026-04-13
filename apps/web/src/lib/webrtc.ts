@@ -144,7 +144,7 @@ export class WebRTCPeer {
       const chunks = this.receiveBuffers.get(fileId);
       const meta = this.receiveMeta.get(fileId);
       if (chunks && meta) {
-        const blob = new Blob(chunks);
+        const blob = new Blob(chunks as unknown as BlobPart[]);
         this.transfers.set(fileId, {
           fileId,
           fileName: meta.name,
@@ -266,7 +266,7 @@ export class WebRTCPeer {
         while (this.dc!.bufferedAmount > 1024 * 1024) {
           await new Promise((r) => setTimeout(r, 10));
         }
-        this.dc!.send(chunk.data);
+        this.dc!.send(chunk.data as unknown as ArrayBuffer);
         bytesSent += chunk.data.length;
 
         const elapsed = (Date.now() - startTime) / 1000;
