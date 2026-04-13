@@ -1,5 +1,18 @@
 export type Platform = "android" | "ios" | "windows" | "mac" | "linux" | "browser";
 
+// Portable WebRTC types so this package compiles without DOM lib
+export interface RTCSessionDescriptionLike {
+  type?: string;
+  sdp?: string;
+  [key: string]: unknown;
+}
+export interface RTCIceCandidateLike {
+  candidate?: string;
+  sdpMid?: string | null;
+  sdpMLineIndex?: number | null;
+  [key: string]: unknown;
+}
+
 export type TransferStatus =
   | "pending"
   | "transferring"
@@ -72,9 +85,9 @@ export type SignalMessage =
   | { type: "device-bye"; deviceId: string }
   | { type: "session-offer"; offer: SessionOffer }
   | { type: "session-response"; response: SessionResponse }
-  | { type: "rtc-offer"; sessionId: string; sdp: RTCSessionDescriptionInit }
-  | { type: "rtc-answer"; sessionId: string; sdp: RTCSessionDescriptionInit }
-  | { type: "rtc-ice"; sessionId: string; candidate: RTCIceCandidateInit }
+  | { type: "rtc-offer"; sessionId: string; sdp: RTCSessionDescriptionLike }
+  | { type: "rtc-answer"; sessionId: string; sdp: RTCSessionDescriptionLike }
+  | { type: "rtc-ice"; sessionId: string; candidate: RTCIceCandidateLike }
   | { type: "chunk-ack"; ack: ChunkAck }
   | { type: "transfer-complete"; complete: TransferComplete }
   | { type: "room-join"; roomId: string; device: DeviceInfo }

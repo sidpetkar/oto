@@ -57,13 +57,13 @@ export class WebRTCPeer {
   private setupSignalingListener() {
     this.cleanup = this.signaling.onMessage((msg) => {
       if (msg.type === "rtc-answer" && msg.sessionId === this.sessionId) {
-        this.handleAnswer(msg.sdp);
+        this.handleAnswer(msg.sdp as RTCSessionDescriptionInit);
       }
       if (msg.type === "rtc-offer" && msg.sessionId === this.sessionId) {
-        this.handleOffer(msg.sdp);
+        this.handleOffer(msg.sdp as RTCSessionDescriptionInit);
       }
       if (msg.type === "rtc-ice" && msg.sessionId === this.sessionId) {
-        this.addIceCandidate(msg.candidate);
+        this.addIceCandidate(msg.candidate as RTCIceCandidateInit);
       }
     });
   }
