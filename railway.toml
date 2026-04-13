@@ -1,5 +1,5 @@
 [build]
-buildCommand = "corepack enable && corepack prepare pnpm@latest --activate && pnpm install --frozen-lockfile && pnpm --filter @oto/protocol build && pnpm --filter @oto/relay build"
+buildCommand = "corepack enable && corepack prepare pnpm@latest --activate && pnpm install --frozen-lockfile && rm -rf packages/protocol/dist apps/relay/dist && pnpm --filter @oto/protocol build && pnpm --filter @oto/relay build"
 
 [deploy]
 startCommand = "node apps/relay/dist/index.js"
