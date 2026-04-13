@@ -1,0 +1,21 @@
+{
+  "name": "@oto/ui",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "lint": "eslint src/",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "react": "^19",
+    "lucide-react": "^0.500",
+    "clsx": "^2"
+  },
+  "devDependencies": {
+    "@oto/tsconfig": "workspace:*",
+    "@types/react": "^19",
+    "typescript": "^5"
+  }
+}

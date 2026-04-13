@@ -1,0 +1,21 @@
+{
+  "name": "@oto/core",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@oto/protocol": "workspace:*",
+    "@noble/curves": "^1",
+    "@noble/ciphers": "^1"
+  },
+  "devDependencies": {
+    "@oto/tsconfig": "workspace:*",
+    "typescript": "^5"
+  }
+}
