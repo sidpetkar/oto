@@ -1,25 +1,26 @@
 "use client";
 
-import { Menu, Settings, Wifi, WifiOff, Loader2, Inbox } from "lucide-react";
+import { Wifi, WifiOff, Loader2, Inbox } from "lucide-react";
 import type { ConnectionStatus } from "../../lib/use-signaling";
 
 interface HeaderProps {
   connectionStatus: ConnectionStatus;
   receivedCount?: number;
   onReceivedClick?: () => void;
-  onQrClick?: () => void;
 }
 
-export function Header({ connectionStatus, receivedCount = 0, onReceivedClick, onQrClick }: HeaderProps) {
+export function Header({ connectionStatus, receivedCount = 0, onReceivedClick }: HeaderProps) {
   return (
-    <header className="flex items-center justify-between px-5 py-4">
+    <header className="flex items-center justify-between px-4 py-4">
+      {/* Logo */}
+      <span className="text-[28px] leading-none tracking-tight">
+        <span className="font-medium text-[#1c1c1c]">OTO</span>
+        <span className="font-extralight text-[#aaaaaa]">Drop</span>
+      </span>
+
+      {/* Right side */}
       <div className="flex items-center gap-3">
-        <button className="w-8 h-8 flex items-center justify-center">
-          <Menu className="w-5 h-5 text-[#1c1c1c]" />
-        </button>
-        <span className="font-bold text-xl tracking-tight">OTODrop</span>
-      </div>
-      <div className="flex items-center gap-3">
+        {/* Connection status */}
         <div className="flex items-center gap-1.5 text-xs">
           {connectionStatus === "connected" ? (
             <>
@@ -38,9 +39,12 @@ export function Header({ connectionStatus, receivedCount = 0, onReceivedClick, o
             </>
           )}
         </div>
+
+        {/* Inbox */}
         <button
           onClick={onReceivedClick}
           className="relative w-8 h-8 flex items-center justify-center"
+          aria-label="Received files"
         >
           <Inbox className="w-5 h-5 text-[#1c1c1c]" />
           {receivedCount > 0 && (
@@ -48,12 +52,6 @@ export function Header({ connectionStatus, receivedCount = 0, onReceivedClick, o
               {receivedCount > 9 ? "9+" : receivedCount}
             </span>
           )}
-        </button>
-        <button
-          onClick={onQrClick}
-          className="w-8 h-8 flex items-center justify-center"
-        >
-          <Settings className="w-5 h-5 text-[#1c1c1c]" />
         </button>
       </div>
     </header>

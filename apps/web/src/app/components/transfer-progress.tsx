@@ -3,6 +3,7 @@
 import { Check, Loader2, Clock, X } from "lucide-react";
 import type { TransferProgress as TProgress } from "../../lib/webrtc";
 import { formatSpeed } from "../../lib/format";
+import { useModalAnimation } from "../../lib/use-modal-animation";
 
 interface TransferProgressProps {
   transfers: TProgress[];
@@ -11,12 +12,17 @@ interface TransferProgressProps {
 }
 
 export function TransferProgress({ transfers, onClose, onCancel }: TransferProgressProps) {
-  const allDone = transfers.length > 0 && transfers.every((t) => t.status === "complete");
+  const allDone    = transfers.length > 0 && transfers.every((t) => t.status === "complete");
   const allWaiting = transfers.every((t) => t.status === "waiting");
+  const exitCb     = allDone ? onClose : (onCancel ?? onClose);
+  const { backdropRef, panelRef, close } = useModalAnimation(exitCb);
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6">
+    <div
+      ref={backdropRef}
+      className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50"
+    >
+      <div ref={panelRef} className="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6">
         {/* Drag handle */}
         <div className="w-10 h-1 bg-[#e0e0e0] rounded-full mx-auto mb-5 sm:hidden" />
 
@@ -25,7 +31,7 @@ export function TransferProgress({ transfers, onClose, onCancel }: TransferProgr
             {allDone ? "Transfer Complete" : allWaiting ? "Waiting for Accept..." : "Transferring..."}
           </h2>
           <button
-            onClick={allDone ? onClose : (onCancel ?? onClose)}
+            onClick={close}
             className="w-8 h-8 rounded-full bg-[#f0f0f0] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
           >
             <X className="w-4 h-4" />
@@ -76,7 +82,7 @@ export function TransferProgress({ transfers, onClose, onCancel }: TransferProgr
 
         {allDone && (
           <button
-            onClick={onClose}
+            onClick={close}
             className="w-full py-3.5 rounded-3xl bg-[#1c1c1c] text-white font-medium text-sm hover:bg-[#333] transition-colors"
           >
             Done

@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { X, Upload, File as FileIcon } from "lucide-react";
 import type { DeviceInfo } from "@oto/protocol";
 import { formatSize } from "../../lib/format";
+import { useModalAnimation } from "../../lib/use-modal-animation";
 
 interface SendModalProps {
   peer: DeviceInfo;
@@ -14,6 +15,7 @@ interface SendModalProps {
 export function SendModal({ peer, onSend, onClose }: SendModalProps) {
   const [files, setFiles] = useState<File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { backdropRef, panelRef, close } = useModalAnimation(onClose);
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setFiles(Array.from(e.target.files));
@@ -27,8 +29,15 @@ export function SendModal({ peer, onSend, onClose }: SendModalProps) {
   const totalSize = files.reduce((s, f) => s + f.size, 0);
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6 max-h-[85vh] flex flex-col">
+    <div
+      ref={backdropRef}
+      className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50"
+      onClick={(e) => { if (e.target === e.currentTarget) close(); }}
+    >
+      <div
+        ref={panelRef}
+        className="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6 max-h-[85vh] flex flex-col"
+      >
         {/* Drag handle */}
         <div className="w-10 h-1 bg-[#e0e0e0] rounded-full mx-auto mb-5 sm:hidden" />
 
@@ -47,7 +56,7 @@ export function SendModal({ peer, onSend, onClose }: SendModalProps) {
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={close}
             className="w-8 h-8 rounded-full bg-[#f0f0f0] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
           >
             <X className="w-4 h-4" />
@@ -70,16 +79,11 @@ export function SendModal({ peer, onSend, onClose }: SendModalProps) {
         {files.length > 0 && (
           <div className="flex-1 overflow-y-auto mb-4 border border-[#f0f0f0] rounded-3xl">
             {files.map((f, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 px-4 py-3 border-b border-[#f0f0f0] last:border-0"
-              >
+              <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-[#f0f0f0] last:border-0">
                 <FileIcon className="w-5 h-5 text-[#999] shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate">{f.name}</p>
-                  <p className="text-xs text-[#999]">
-                    {formatSize(f.size)} · {f.type.split("/").pop() || "file"}
-                  </p>
+                  <p className="text-xs text-[#999]">{formatSize(f.size)} · {f.type.split("/").pop() || "file"}</p>
                 </div>
               </div>
             ))}

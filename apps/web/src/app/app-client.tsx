@@ -271,7 +271,10 @@ export default function AppClient() {
   if (!device) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <span className="font-bold text-xl tracking-tight">OTODrop</span>
+        <span className="text-xl tracking-tight leading-none">
+          <span className="font-medium text-[#1c1c1c]">OTO</span>
+          <span className="font-extralight text-[#aaaaaa]">Drop</span>
+        </span>
         <p className="text-sm text-[#999] mt-2">Initializing...</p>
       </div>
     );
@@ -283,48 +286,25 @@ export default function AppClient() {
         connectionStatus={connectionStatus}
         receivedCount={receivedFiles.length}
         onReceivedClick={() => setShowReceived(true)}
-        onQrClick={handleCreatePin}
       />
 
-      {peers.length > 0 && (
-        <div className="flex gap-2 px-5 py-2 overflow-x-auto no-scrollbar">
-          {peers.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => handlePeerClick(p)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-[#f0f0f0] text-[#1c1c1c] hover:bg-[#e0e0e0] transition-colors whitespace-nowrap"
-            >
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: p.avatarColor }}
-              />
-              {p.otterName}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className="px-5 pt-4 pb-2">
-        <p className="text-sm text-[#999]">Available Nearby</p>
-      </div>
-
-      <div className="flex-1 flex items-center justify-center px-5">
+      <div className="flex-1 flex items-center justify-center px-4">
         <Radar self={device} peers={peers} onPeerClick={handlePeerClick} />
       </div>
 
       {/* Bottom actions */}
-      <div className="px-5 pb-5 flex gap-3">
+      <div className="px-4 pb-6 flex gap-3">
         <button
           onClick={handleCreatePin}
-          className="flex-1 py-3 rounded-2xl bg-[#1c1c1c] text-white font-medium text-sm hover:bg-[#333] transition-colors"
+          className="flex-1 py-3 rounded-3xl bg-[#1c1c1c] text-white text-sm hover:bg-[#333] transition-colors"
         >
-          Create PIN / QR
+          Create Drop
         </button>
         <button
           onClick={() => setShowPinJoin(true)}
-          className="flex-1 py-3 rounded-2xl bg-[#f0f0f0] text-[#1c1c1c] font-medium text-sm hover:bg-[#e0e0e0] transition-colors"
+          className="flex-1 py-3 rounded-3xl bg-[#f0f0f0] text-[#1c1c1c] text-sm hover:bg-[#e0e0e0] transition-colors"
         >
-          Join with PIN
+          Join Drop
         </button>
       </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { X, Download, Trash2, File, Image, FileVideo, FileText, ArrowLeft, Inbox } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Download, Trash2, File, Image, FileVideo, FileText, ArrowLeft, Inbox } from "lucide-react";
 import { MediaViewer } from "./media-viewer";
 
 export interface ReceivedFile {
@@ -43,20 +43,14 @@ function isMedia(type: string) {
 function FilePreview({ file, onClick }: { file: ReceivedFile; onClick?: () => void }) {
   if (file.type.startsWith("image/")) {
     return (
-      <button
-        onClick={onClick}
-        className="w-12 h-12 rounded-2xl overflow-hidden bg-[#f0f0f0] shrink-0"
-      >
+      <button onClick={onClick} className="w-12 h-12 rounded-2xl overflow-hidden bg-[#f0f0f0] shrink-0">
         <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
       </button>
     );
   }
   if (file.type.startsWith("video/")) {
     return (
-      <button
-        onClick={onClick}
-        className="w-12 h-12 rounded-2xl overflow-hidden bg-[#f0f0f0] shrink-0 relative"
-      >
+      <button onClick={onClick} className="w-12 h-12 rounded-2xl overflow-hidden bg-[#f0f0f0] shrink-0 relative">
         <video src={file.url} className="w-full h-full object-cover" muted />
         <div className="absolute inset-0 flex items-center justify-center bg-black/30">
           <span className="text-white text-[10px] font-bold">PLAY</span>
@@ -88,6 +82,19 @@ interface ReceivedFilesProps {
 
 export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [closing, setClosing] = useState(false);
+
+  // Slide out then call onClose
+  const handleClose = () => {
+    setClosing(true);
+  };
+
+  useEffect(() => {
+    if (closing) {
+      const t = setTimeout(() => onClose(), 280);
+      return () => clearTimeout(t);
+    }
+  }, [closing, onClose]);
 
   const totalSize = files.reduce((s, f) => s + f.size, 0);
   const mediaFiles = files.filter((f) => isMedia(f.type));
@@ -97,7 +104,6 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
     if (idx >= 0) setViewerIndex(idx);
   };
 
-  // Group by "from" to get the latest batch
   const latestFrom = files.length > 0 ? files[0].from : null;
   const latestBatch = latestFrom
     ? files.filter((f) => f.from === latestFrom && Date.now() - f.timestamp < 300000)
@@ -105,19 +111,27 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-white z-50 flex flex-col max-w-md mx-auto w-full">
-        <header className="flex items-center justify-between px-5 py-4 border-b border-[#f0f0f0]">
+      <div
+        className={`fixed inset-0 bg-white z-50 flex flex-col max-w-md mx-auto w-full ${
+          closing ? "page-slide-out" : "page-slide-in"
+        }`}
+      >
+        {/* Header — matches main header px-4 py-4 */}
+        <header className="flex items-center justify-between px-4 py-4 border-b border-[#f0f0f0]">
           <div className="flex items-center gap-3">
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f0f0f0] transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="font-bold text-lg">Received Files</h1>
+              {/* Extra-thin title */}
+              <h1 className="text-base leading-snug font-normal text-[#1c1c1c]">
+                Received
+              </h1>
               {files.length > 0 && (
-                <p className="text-xs text-[#999]">
+                <p className="text-xs text-[#999] mt-0.5">
                   {files.length} file{files.length !== 1 ? "s" : ""} · {formatSize(totalSize)}
                 </p>
               )}
@@ -144,7 +158,7 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto">
-            <div className="px-5 py-3 space-y-2">
+            <div className="px-4 py-3 space-y-2">
               {files.map((file) => (
                 <div
                   key={file.id}
@@ -175,7 +189,7 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
         )}
 
         {files.length > 0 && (
-          <div className="px-5 py-4 border-t border-[#f0f0f0] space-y-2">
+          <div className="px-4 py-4 border-t border-[#f0f0f0] space-y-2">
             {latestBatch.length > 1 && (
               <button
                 onClick={() => latestBatch.forEach(handleDownload)}

@@ -83,31 +83,31 @@ export function Radar({ self, peers, onPeerClick }: RadarProps) {
           <button
             key={peer.id}
             onClick={() => onPeerClick(peer)}
-            className="absolute flex flex-col items-center gap-1 device-float z-10 group"
+            className="absolute flex flex-col items-center gap-1 z-10 group"
             style={{
               left: pos.left,
               top: pos.top,
               transform: "translate(-50%, -50%)",
-              animationDelay: `${i * 0.4}s`,
             }}
           >
-            <div className="w-10 h-10 rounded-full bg-white border-2 border-[#e8e8e8] flex items-center justify-center shadow-sm group-hover:border-[#1c1c1c] group-hover:shadow-md transition-all">
-              <PlatformIcon platform={peer.platform} />
+            {/* Float wrapper — animates only Y so positioning is not disturbed */}
+            <div
+              className="flex flex-col items-center gap-1 device-float"
+              style={{ animationDelay: `${i * 0.4}s` }}
+            >
+              <div className="w-10 h-10 rounded-full bg-white border-2 border-[#e8e8e8] flex items-center justify-center shadow-sm group-hover:border-[#1c1c1c] group-hover:shadow-md transition-all">
+                <PlatformIcon platform={peer.platform} />
+              </div>
+              <span className="text-[10px] font-medium text-[#999] group-hover:text-[#1c1c1c] transition-colors">
+                {peer.otterName}
+              </span>
             </div>
-            <span className="text-[10px] font-medium text-[#999] group-hover:text-[#1c1c1c] transition-colors">
-              {peer.otterName}
-            </span>
           </button>
         );
       })}
 
-      {/* Empty state */}
       {peers.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="text-sm text-[#999] mt-24">
-            Searching for nearby devices...
-          </p>
-        </div>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" />
       )}
     </div>
   );
