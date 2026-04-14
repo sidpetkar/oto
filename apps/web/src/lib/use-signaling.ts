@@ -8,10 +8,12 @@ import { getOrCreateDevice } from "./device";
 const RELAY_URL =
   process.env.NEXT_PUBLIC_RELAY_URL || "ws://localhost:4000/ws";
 
+export type ConnectionStatus = "connecting" | "connected" | "disconnected";
+
 export function useSignaling() {
   const [device, setDevice] = useState<DeviceInfo | null>(null);
   const [peers, setPeers] = useState<DeviceInfo[]>([]);
-  const [connected, setConnected] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("disconnected");
   const [pin, setPin] = useState<string | null>(null);
   const [matchedPeer, setMatchedPeer] = useState<{
     sessionId: string;
@@ -29,6 +31,8 @@ export function useSignaling() {
 
     const client = new SignalingClient(RELAY_URL, device);
     clientRef.current = client;
+
+    const unsubStatus = client.onStatus((s) => setConnectionStatus(s));
 
     const unsub = client.onMessage((msg: SignalMessage) => {
       switch (msg.type) {
@@ -63,11 +67,6 @@ export function useSignaling() {
 
     client.connect();
 
-    const interval = setInterval(() => {
-      setConnected(client.connected);
-    }, 500);
-
-    // Reconnect immediately when tab becomes visible (mobile browser resume)
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
         client.forceReconnect();
@@ -75,13 +74,12 @@ export function useSignaling() {
     };
     document.addEventListener("visibilitychange", handleVisibility);
 
-    // Reconnect when network comes back online
     const handleOnline = () => client.forceReconnect();
     window.addEventListener("online", handleOnline);
 
     return () => {
       unsub();
-      clearInterval(interval);
+      unsubStatus();
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("online", handleOnline);
       client.disconnect();
@@ -121,7 +119,8 @@ export function useSignaling() {
   return {
     device,
     peers,
-    connected,
+    connected: connectionStatus === "connected",
+    connectionStatus,
     pin,
     matchedPeer,
     createPin,

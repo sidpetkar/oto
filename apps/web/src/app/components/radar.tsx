@@ -58,15 +58,22 @@ export function Radar({ self, peers, onPeerClick }: RadarProps) {
 
       {/* Self in center */}
       <div
-        className="absolute w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg z-10 shadow-lg"
+        className="absolute flex flex-col items-center gap-1 z-10"
         style={{
-          backgroundColor: self.avatarColor || "#f4d03f",
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
         }}
       >
-        {self.otterName[0]}
+        <div
+          className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg"
+          style={{ backgroundColor: self.avatarColor || "#f4d03f" }}
+        >
+          {self.otterName[0]}
+        </div>
+        <span className="text-[10px] font-medium text-[#666] whitespace-nowrap">
+          {self.otterName}
+        </span>
       </div>
 
       {/* Peers */}

@@ -45,7 +45,7 @@ function FilePreview({ file, onClick }: { file: ReceivedFile; onClick?: () => vo
     return (
       <button
         onClick={onClick}
-        className="w-12 h-12 rounded-xl overflow-hidden bg-[#f0f0f0] shrink-0"
+        className="w-12 h-12 rounded-2xl overflow-hidden bg-[#f0f0f0] shrink-0"
       >
         <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
       </button>
@@ -55,7 +55,7 @@ function FilePreview({ file, onClick }: { file: ReceivedFile; onClick?: () => vo
     return (
       <button
         onClick={onClick}
-        className="w-12 h-12 rounded-xl overflow-hidden bg-[#f0f0f0] shrink-0 relative"
+        className="w-12 h-12 rounded-2xl overflow-hidden bg-[#f0f0f0] shrink-0 relative"
       >
         <video src={file.url} className="w-full h-full object-cover" muted />
         <div className="absolute inset-0 flex items-center justify-center bg-black/30">
@@ -65,7 +65,7 @@ function FilePreview({ file, onClick }: { file: ReceivedFile; onClick?: () => vo
     );
   }
   return (
-    <div className="w-12 h-12 rounded-xl bg-[#f0f0f0] flex items-center justify-center shrink-0">
+    <div className="w-12 h-12 rounded-2xl bg-[#f0f0f0] flex items-center justify-center shrink-0">
       <FileIcon type={file.type} />
     </div>
   );
@@ -148,7 +148,7 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
               {files.map((file) => (
                 <div
                   key={file.id}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-[#fafafa] hover:bg-[#f0f0f0] transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-3xl bg-[#fafafa] hover:bg-[#f0f0f0] transition-colors"
                 >
                   <FilePreview
                     file={file}
@@ -163,7 +163,7 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
                   </div>
                   <button
                     onClick={() => handleDownload(file)}
-                    className="w-10 h-10 rounded-xl bg-[#1c1c1c] text-white flex items-center justify-center hover:bg-[#333] transition-colors shrink-0"
+                    className="w-10 h-10 rounded-full bg-[#1c1c1c] text-white flex items-center justify-center hover:bg-[#333] transition-colors shrink-0"
                     title="Download"
                   >
                     <Download className="w-4 h-4" />
@@ -179,7 +179,7 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
             {latestBatch.length > 1 && (
               <button
                 onClick={() => latestBatch.forEach(handleDownload)}
-                className="w-full py-3 rounded-2xl bg-[#f0f0f0] text-[#1c1c1c] font-medium text-sm hover:bg-[#e0e0e0] transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-3xl bg-[#f0f0f0] text-[#1c1c1c] font-medium text-sm hover:bg-[#e0e0e0] transition-colors flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Download Latest Batch ({latestBatch.length})
@@ -187,7 +187,7 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
             )}
             <button
               onClick={() => files.forEach(handleDownload)}
-              className="w-full py-3.5 rounded-2xl bg-[#1c1c1c] text-white font-medium text-sm hover:bg-[#333] transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-3xl bg-[#1c1c1c] text-white font-medium text-sm hover:bg-[#333] transition-colors flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4" />
               Download All ({files.length} file{files.length !== 1 ? "s" : ""})

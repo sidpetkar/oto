@@ -26,7 +26,7 @@ function storedToReceived(s: StoredFile): ReceivedFile {
 }
 
 export default function AppClient() {
-  const { device, peers, connected, pin, matchedPeer, createPin, joinPin, clearMatch, client } =
+  const { device, peers, connected, connectionStatus, pin, matchedPeer, createPin, joinPin, clearMatch, client } =
     useSignaling();
 
   const [selectedPeer, setSelectedPeer] = useState<DeviceInfo | null>(null);
@@ -49,7 +49,6 @@ export default function AppClient() {
 
   const pendingFilesRef = useRef<File[]>([]);
 
-  // Load persisted files from IndexedDB on mount
   useEffect(() => {
     getAllFiles()
       .then((stored) => {
@@ -59,6 +58,21 @@ export default function AppClient() {
       })
       .catch(() => {});
   }, []);
+
+  // Auto-join PIN from URL (QR code flow)
+  const autoJoinedRef = useRef(false);
+  useEffect(() => {
+    if (!device || !connected || autoJoinedRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const urlPin = params.get("pin");
+    if (urlPin && urlPin.length === 6) {
+      autoJoinedRef.current = true;
+      joinPin(urlPin);
+      setShowPinJoin(false);
+      // Clean URL without reload
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [device, connected, joinPin]);
 
   useEffect(() => {
     if (!client.current || !device) return;
@@ -266,9 +280,10 @@ export default function AppClient() {
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
       <Header
-        connected={connected}
+        connectionStatus={connectionStatus}
         receivedCount={receivedFiles.length}
         onReceivedClick={() => setShowReceived(true)}
+        onQrClick={handleCreatePin}
       />
 
       {peers.length > 0 && (
@@ -295,6 +310,22 @@ export default function AppClient() {
 
       <div className="flex-1 flex items-center justify-center px-5">
         <Radar self={device} peers={peers} onPeerClick={handlePeerClick} />
+      </div>
+
+      {/* Bottom actions */}
+      <div className="px-5 pb-5 flex gap-3">
+        <button
+          onClick={handleCreatePin}
+          className="flex-1 py-3 rounded-2xl bg-[#1c1c1c] text-white font-medium text-sm hover:bg-[#333] transition-colors"
+        >
+          Create PIN / QR
+        </button>
+        <button
+          onClick={() => setShowPinJoin(true)}
+          className="flex-1 py-3 rounded-2xl bg-[#f0f0f0] text-[#1c1c1c] font-medium text-sm hover:bg-[#e0e0e0] transition-colors"
+        >
+          Join with PIN
+        </button>
       </div>
 
       {showSendModal && selectedPeer && (

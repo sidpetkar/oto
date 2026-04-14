@@ -16,23 +16,20 @@ export function TransferProgress({ transfers, onClose, onCancel }: TransferProgr
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6">
+      <div className="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6">
+        {/* Drag handle */}
+        <div className="w-10 h-1 bg-[#e0e0e0] rounded-full mx-auto mb-5 sm:hidden" />
+
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-medium text-lg">
-            {allDone
-              ? "Transfer Complete"
-              : allWaiting
-                ? "Waiting for Accept..."
-                : "Transferring..."}
+            {allDone ? "Transfer Complete" : allWaiting ? "Waiting for Accept..." : "Transferring..."}
           </h2>
-          {!allDone && (
-            <button
-              onClick={onCancel ?? onClose}
-              className="w-8 h-8 rounded-full bg-[#f0f0f0] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+          <button
+            onClick={allDone ? onClose : (onCancel ?? onClose)}
+            className="w-8 h-8 rounded-full bg-[#f0f0f0] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
         <div className="space-y-4 mb-6 max-h-60 overflow-y-auto">
@@ -80,7 +77,7 @@ export function TransferProgress({ transfers, onClose, onCancel }: TransferProgr
         {allDone && (
           <button
             onClick={onClose}
-            className="w-full py-3.5 rounded-2xl bg-[#1c1c1c] text-white font-medium text-sm hover:bg-[#333] transition-colors"
+            className="w-full py-3.5 rounded-3xl bg-[#1c1c1c] text-white font-medium text-sm hover:bg-[#333] transition-colors"
           >
             Done
           </button>

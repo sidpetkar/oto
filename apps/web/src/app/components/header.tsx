@@ -1,14 +1,16 @@
 "use client";
 
-import { Menu, Settings, Wifi, WifiOff, Inbox } from "lucide-react";
+import { Menu, Settings, Wifi, WifiOff, Loader2, Inbox } from "lucide-react";
+import type { ConnectionStatus } from "../../lib/use-signaling";
 
 interface HeaderProps {
-  connected: boolean;
+  connectionStatus: ConnectionStatus;
   receivedCount?: number;
   onReceivedClick?: () => void;
+  onQrClick?: () => void;
 }
 
-export function Header({ connected, receivedCount = 0, onReceivedClick }: HeaderProps) {
+export function Header({ connectionStatus, receivedCount = 0, onReceivedClick, onQrClick }: HeaderProps) {
   return (
     <header className="flex items-center justify-between px-5 py-4">
       <div className="flex items-center gap-3">
@@ -19,10 +21,15 @@ export function Header({ connected, receivedCount = 0, onReceivedClick }: Header
       </div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 text-xs">
-          {connected ? (
+          {connectionStatus === "connected" ? (
             <>
               <Wifi className="w-3.5 h-3.5 text-green-600" />
               <span className="text-green-600">Connected</span>
+            </>
+          ) : connectionStatus === "connecting" ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 text-amber-500 animate-spin" />
+              <span className="text-amber-500">Connecting...</span>
             </>
           ) : (
             <>
@@ -42,7 +49,10 @@ export function Header({ connected, receivedCount = 0, onReceivedClick }: Header
             </span>
           )}
         </button>
-        <button className="w-8 h-8 flex items-center justify-center">
+        <button
+          onClick={onQrClick}
+          className="w-8 h-8 flex items-center justify-center"
+        >
           <Settings className="w-5 h-5 text-[#1c1c1c]" />
         </button>
       </div>
