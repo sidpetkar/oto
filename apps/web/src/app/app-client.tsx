@@ -271,9 +271,9 @@ export default function AppClient() {
   if (!device) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <span className="text-xl tracking-tight leading-none">
-          <span className="font-medium text-[#1c1c1c]">OTO</span>
-          <span className="font-extralight text-[#aaaaaa]">Drop</span>
+        <span className="text-xl tracking-tight italic leading-none">
+          <span style={{ fontWeight: 500 }}>OTO</span>
+          <span style={{ fontWeight: 100 }} className="text-[#aaaaaa]">Send</span>
         </span>
         <p className="text-sm text-[#999] mt-2">Initializing...</p>
       </div>

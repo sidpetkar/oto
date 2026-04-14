@@ -13,9 +13,9 @@ export function Header({ connectionStatus, receivedCount = 0, onReceivedClick }:
   return (
     <header className="flex items-center justify-between px-4 py-4">
       {/* Logo */}
-      <span className="text-[28px] leading-none tracking-tight">
-        <span className="font-medium text-[#1c1c1c]">OTO</span>
-        <span className="font-extralight text-[#aaaaaa]">Drop</span>
+      <span className="text-[28px] leading-none tracking-tight italic">
+        <span style={{ fontWeight: 500 }}>OTO</span>
+        <span style={{ fontWeight: 100 }} className="text-[#aaaaaa]">Send</span>
       </span>
 
       {/* Right side */}
