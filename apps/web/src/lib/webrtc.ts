@@ -73,7 +73,28 @@ export class WebRTCPeer {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" },
+        {
+          urls: "turn:global.relay.metered.ca:80",
+          username: "4e1c5df0e953af0fbdbc7814",
+          credential: "sFqnMViqLhGYuRkk",
+        },
+        {
+          urls: "turn:global.relay.metered.ca:80?transport=tcp",
+          username: "4e1c5df0e953af0fbdbc7814",
+          credential: "sFqnMViqLhGYuRkk",
+        },
+        {
+          urls: "turn:global.relay.metered.ca:443",
+          username: "4e1c5df0e953af0fbdbc7814",
+          credential: "sFqnMViqLhGYuRkk",
+        },
+        {
+          urls: "turns:global.relay.metered.ca:443?transport=tcp",
+          username: "4e1c5df0e953af0fbdbc7814",
+          credential: "sFqnMViqLhGYuRkk",
+        },
       ],
+      iceTransportPolicy: "all",
     });
 
     this.pc.onicecandidate = (e) => {

@@ -20,12 +20,10 @@ export function useSignaling() {
 
   const clientRef = useRef<SignalingClient | null>(null);
 
-  // Create device identity on client only (avoids hydration mismatch)
   useEffect(() => {
     setDevice(getOrCreateDevice());
   }, []);
 
-  // Connect to relay once device is ready
   useEffect(() => {
     if (!device) return;
 
@@ -69,9 +67,23 @@ export function useSignaling() {
       setConnected(client.connected);
     }, 500);
 
+    // Reconnect immediately when tab becomes visible (mobile browser resume)
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        client.forceReconnect();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    // Reconnect when network comes back online
+    const handleOnline = () => client.forceReconnect();
+    window.addEventListener("online", handleOnline);
+
     return () => {
       unsub();
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("online", handleOnline);
       client.disconnect();
       clientRef.current = null;
     };

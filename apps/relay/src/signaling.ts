@@ -62,9 +62,17 @@ export async function signaling(app: FastifyInstance) {
     let currentDeviceId: string | null = null;
 
     socket.on("message", (raw) => {
+      const text = raw.toString();
+
+      // Keepalive ping from client — reply with pong, nothing more
+      if (text === "ping") {
+        socket.send("pong");
+        return;
+      }
+
       let msg: SignalMessage;
       try {
-        msg = JSON.parse(raw.toString());
+        msg = JSON.parse(text);
       } catch {
         socket.send(JSON.stringify({ type: "error", message: "Invalid JSON" }));
         return;

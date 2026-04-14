@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import type { DeviceInfo, FileMetadata } from "@oto/protocol";
 import { useSignaling } from "../lib/use-signaling";
 import { WebRTCPeer, type TransferProgress as TProgress } from "../lib/webrtc";
+import { saveFile, getAllFiles, clearAllFiles, type StoredFile } from "../lib/file-store";
 import { Header } from "./components/header";
 import { Radar } from "./components/radar";
 import { SendModal } from "./components/send-modal";
@@ -11,6 +12,18 @@ import { ReceivePrompt } from "./components/receive-prompt";
 import { TransferProgress } from "./components/transfer-progress";
 import { PinDialog } from "./components/pin-dialog";
 import { ReceivedFiles, type ReceivedFile } from "./components/received-files";
+
+function storedToReceived(s: StoredFile): ReceivedFile {
+  return {
+    id: s.id,
+    name: s.name,
+    size: s.size,
+    type: s.type,
+    url: URL.createObjectURL(s.blob),
+    timestamp: s.timestamp,
+    from: s.from,
+  };
+}
 
 export default function AppClient() {
   const { device, peers, connected, pin, matchedPeer, createPin, joinPin, clearMatch, client } =
@@ -35,6 +48,17 @@ export default function AppClient() {
   peersRef.current = peers;
 
   const pendingFilesRef = useRef<File[]>([]);
+
+  // Load persisted files from IndexedDB on mount
+  useEffect(() => {
+    getAllFiles()
+      .then((stored) => {
+        if (stored.length > 0) {
+          setReceivedFiles(stored.map(storedToReceived));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!client.current || !device) return;
@@ -142,18 +166,26 @@ export default function AppClient() {
       onProgress: (t) => setTransfers([...t]),
       onFileReceived: (blob, meta) => {
         const url = URL.createObjectURL(blob);
-        setReceivedFiles((prev) => [
-          {
-            id: meta.id,
-            name: meta.name,
-            size: meta.size,
-            type: meta.type,
-            url,
-            timestamp: Date.now(),
-            from: offerSender.otterName,
-          },
-          ...prev,
-        ]);
+        const received: ReceivedFile = {
+          id: meta.id,
+          name: meta.name,
+          size: meta.size,
+          type: meta.type,
+          url,
+          timestamp: Date.now(),
+          from: offerSender.otterName,
+        };
+        setReceivedFiles((prev) => [received, ...prev]);
+
+        saveFile({
+          id: meta.id,
+          name: meta.name,
+          size: meta.size,
+          type: meta.type,
+          blob,
+          timestamp: Date.now(),
+          from: offerSender.otterName,
+        }).catch(() => {});
       },
     });
     rtc.start();
@@ -239,7 +271,6 @@ export default function AppClient() {
         onReceivedClick={() => setShowReceived(true)}
       />
 
-      {/* Peer chips */}
       {peers.length > 0 && (
         <div className="flex gap-2 px-5 py-2 overflow-x-auto no-scrollbar">
           {peers.map((p) => (
@@ -266,7 +297,6 @@ export default function AppClient() {
         <Radar self={device} peers={peers} onPeerClick={handlePeerClick} />
       </div>
 
-      {/* Modals */}
       {showSendModal && selectedPeer && (
         <SendModal
           peer={selectedPeer}
@@ -299,6 +329,7 @@ export default function AppClient() {
           onClear={() => {
             receivedFiles.forEach((f) => URL.revokeObjectURL(f.url));
             setReceivedFiles([]);
+            clearAllFiles().catch(() => {});
             setShowReceived(false);
           }}
         />

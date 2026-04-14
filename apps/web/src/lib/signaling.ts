@@ -6,7 +6,10 @@ export class SignalingClient {
   private ws: WebSocket | null = null;
   private handlers = new Set<MessageHandler>();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private pingInterval: ReturnType<typeof setInterval> | null = null;
   private _connected = false;
+  private destroyed = false;
+  private retryDelay = 1000;
 
   constructor(
     private url: string,
@@ -18,16 +21,25 @@ export class SignalingClient {
   }
 
   connect() {
+    if (this.destroyed) return;
     if (this.ws?.readyState === WebSocket.OPEN) return;
 
-    this.ws = new WebSocket(this.url);
+    try {
+      this.ws = new WebSocket(this.url);
+    } catch {
+      this.scheduleReconnect();
+      return;
+    }
 
     this.ws.onopen = () => {
       this._connected = true;
+      this.retryDelay = 1000;
       this.send({ type: "device-hello", device: this.device });
+      this.startPing();
     };
 
     this.ws.onmessage = (event) => {
+      if (event.data === "pong") return;
       try {
         const msg: SignalMessage = JSON.parse(event.data);
         this.handlers.forEach((h) => h(msg));
@@ -38,6 +50,7 @@ export class SignalingClient {
 
     this.ws.onclose = () => {
       this._connected = false;
+      this.stopPing();
       this.scheduleReconnect();
     };
 
@@ -46,12 +59,41 @@ export class SignalingClient {
     };
   }
 
+  private startPing() {
+    this.stopPing();
+    this.pingInterval = setInterval(() => {
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send("ping");
+      }
+    }, 25000);
+  }
+
+  private stopPing() {
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
+  }
+
   private scheduleReconnect() {
-    if (this.reconnectTimer) return;
+    if (this.destroyed || this.reconnectTimer) return;
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
       this.connect();
-    }, 3000);
+    }, this.retryDelay);
+    this.retryDelay = Math.min(this.retryDelay * 1.5, 10000);
+  }
+
+  /** Call when tab becomes visible again to force immediate reconnect */
+  forceReconnect() {
+    if (this.destroyed) return;
+    if (this.ws?.readyState === WebSocket.OPEN) return;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    this.retryDelay = 1000;
+    this.connect();
   }
 
   send(msg: SignalMessage) {
@@ -66,6 +108,8 @@ export class SignalingClient {
   }
 
   disconnect() {
+    this.destroyed = true;
+    this.stopPing();
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
