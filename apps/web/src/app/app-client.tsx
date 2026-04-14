@@ -5,6 +5,7 @@ import type { DeviceInfo, FileMetadata } from "@oto/protocol";
 import { useSignaling } from "../lib/use-signaling";
 import { WebRTCPeer, type TransferProgress as TProgress } from "../lib/webrtc";
 import { saveFile, getAllFiles, clearAllFiles, type StoredFile } from "../lib/file-store";
+import { useWakeLock } from "../lib/use-wake-lock";
 import { Header } from "./components/header";
 import { Radar } from "./components/radar";
 import { SendModal } from "./components/send-modal";
@@ -42,6 +43,9 @@ export default function AppClient() {
     files: FileMetadata[];
     sessionId: string;
   } | null>(null);
+
+  // Keep screen awake while app is connected or transferring
+  useWakeLock(connected || showTransfers);
 
   const peerRef = useRef<WebRTCPeer | null>(null);
   const peersRef = useRef<DeviceInfo[]>([]);
@@ -270,7 +274,7 @@ export default function AppClient() {
 
   if (!device) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center justify-center h-screen overflow-hidden">
         <span className="text-xl tracking-tight italic leading-none">
           <span style={{ fontWeight: 500 }}>OTO</span>
           <span style={{ fontWeight: 100 }} className="text-[#aaaaaa]">Send</span>
@@ -281,7 +285,7 @@ export default function AppClient() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
+    <div className="flex flex-col h-screen max-w-md mx-auto w-full overflow-hidden" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
       <Header
         connectionStatus={connectionStatus}
         receivedCount={receivedFiles.length}

@@ -12,11 +12,36 @@
 
 * {
   font-family: "Chivo Mono", monospace;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  overflow: hidden;
+  height: 100%;
+  /* Prevent pull-to-refresh on mobile Chrome */
+  overscroll-behavior: none;
 }
 
 body {
   background: var(--color-surface);
   color: var(--color-primary);
+  overflow: hidden;
+  height: 100%;
+  overscroll-behavior: none;
+  /* Prevent elastic bounce on iOS Safari */
+  position: fixed;
+  width: 100%;
+  /* Prevent text selection on long press (native feel) */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Prevent callout on long press (iOS) */
+  -webkit-touch-callout: none;
+}
+
+/* Allow text selection in input fields */
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 @keyframes radar-ripple {
