@@ -58,14 +58,37 @@ function parseSessionPeers(sessionId: string, senderId: string): { receiverId: s
 }
 
 export async function signaling(app: FastifyInstance) {
+  // Server-side liveness: ping all clients every 30s, drop unresponsive ones
+  const aliveSet = new WeakSet<WebSocket>();
+  setInterval(() => {
+    for (const [id, conn] of devices) {
+      if (!aliveSet.has(conn.ws)) {
+        // Didn't respond to last ping — terminate
+        conn.ws.terminate();
+        devices.delete(id);
+        broadcast(Array.from(devices.keys()), { type: "device-bye", deviceId: id });
+        continue;
+      }
+      aliveSet.delete(conn.ws);
+      if (conn.ws.readyState === 1) conn.ws.ping();
+    }
+  }, 30000);
+
   app.get("/ws", { websocket: true }, (socket) => {
     let currentDeviceId: string | null = null;
+
+    socket.on("pong", () => {
+      aliveSet.add(socket);
+    });
+    // Mark alive on connect
+    aliveSet.add(socket);
 
     socket.on("message", (raw) => {
       const text = raw.toString();
 
       // Keepalive ping from client — reply with pong, nothing more
       if (text === "ping") {
+        aliveSet.add(socket);
         socket.send("pong");
         return;
       }

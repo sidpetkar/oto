@@ -10,10 +10,12 @@ export class SignalingClient {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private pingInterval: ReturnType<typeof setInterval> | null = null;
   private pongTimeout: ReturnType<typeof setTimeout> | null = null;
+  private lastPongAt = 0;
   private _connected = false;
   private _status: "connecting" | "connected" | "disconnected" = "disconnected";
   private destroyed = false;
-  private retryDelay = 1000;
+  private retryDelay = 500;
+  private burstAttempts = 0;
 
   constructor(
     private url: string,
@@ -34,16 +36,25 @@ export class SignalingClient {
     this.statusHandlers.forEach((h) => h(s));
   }
 
-  connect() {
-    if (this.destroyed) return;
-    if (this.ws?.readyState === WebSocket.OPEN) return;
-
-    // Close any lingering sockets in CONNECTING state
-    if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
-      try { this.ws.close(); } catch {}
+  private killSocket() {
+    this.stopPing();
+    if (this.ws) {
+      try {
+        this.ws.onopen = null;
+        this.ws.onclose = null;
+        this.ws.onerror = null;
+        this.ws.onmessage = null;
+        this.ws.close();
+      } catch {}
       this.ws = null;
     }
+  }
 
+  connect() {
+    if (this.destroyed) return;
+
+    // Always kill existing socket — iOS reports stale sockets as OPEN after resume
+    this.killSocket();
     this.setStatus("connecting");
 
     try {
@@ -54,27 +65,28 @@ export class SignalingClient {
       return;
     }
 
-    // Hard timeout: if socket doesn't open in 10s, kill and retry
     const connectTimeout = setTimeout(() => {
       if (this.ws && this.ws.readyState !== WebSocket.OPEN) {
         console.warn("[WS] connect timeout, retrying");
-        try { this.ws.close(); } catch {}
-        this.ws = null;
+        this.killSocket();
         this.setStatus("disconnected");
         this.scheduleReconnect();
       }
-    }, 10000);
+    }, 8000);
 
     this.ws.onopen = () => {
       clearTimeout(connectTimeout);
       this.setStatus("connected");
-      this.retryDelay = 1000;
+      this.retryDelay = 500;
+      this.burstAttempts = 0;
+      this.lastPongAt = Date.now();
       this.send({ type: "device-hello", device: this.device });
       this.startPing();
     };
 
     this.ws.onmessage = (event) => {
       if (event.data === "pong") {
+        this.lastPongAt = Date.now();
         if (this.pongTimeout) {
           clearTimeout(this.pongTimeout);
           this.pongTimeout = null;
@@ -85,7 +97,7 @@ export class SignalingClient {
         const msg: SignalMessage = JSON.parse(event.data);
         this.handlers.forEach((h) => h(msg));
       } catch {
-        // ignore malformed messages
+        // ignore malformed
       }
     };
 
@@ -97,22 +109,40 @@ export class SignalingClient {
     };
 
     this.ws.onerror = () => {
-      // onclose will fire after this
+      // onclose fires after this
     };
   }
 
   private startPing() {
     this.stopPing();
     this.pingInterval = setInterval(() => {
+      // Check if socket is truly alive — iOS can keep readyState=OPEN on dead sockets
+      const sincePong = Date.now() - this.lastPongAt;
+      if (sincePong > 30000) {
+        console.warn("[WS] no pong in 30s, forcing reconnect");
+        this.killSocket();
+        this.setStatus("disconnected");
+        this.scheduleReconnect();
+        return;
+      }
+
       if (this.ws?.readyState === WebSocket.OPEN) {
-        this.ws.send("ping");
-        // If no pong within 5s, consider connection dead
+        try {
+          this.ws.send("ping");
+        } catch {
+          this.killSocket();
+          this.setStatus("disconnected");
+          this.scheduleReconnect();
+          return;
+        }
         this.pongTimeout = setTimeout(() => {
           console.warn("[WS] pong timeout, reconnecting");
-          try { this.ws?.close(); } catch {}
-        }, 5000);
+          this.killSocket();
+          this.setStatus("disconnected");
+          this.scheduleReconnect();
+        }, 3000);
       }
-    }, 20000);
+    }, 12000);
   }
 
   private stopPing() {
@@ -132,21 +162,27 @@ export class SignalingClient {
       this.reconnectTimer = null;
       this.connect();
     }, this.retryDelay);
-    this.retryDelay = Math.min(this.retryDelay * 1.5, 10000);
+    // Burst: first 4 attempts are fast (500ms, 700ms, 1000ms, 1500ms), then back off
+    if (this.burstAttempts < 4) {
+      this.burstAttempts++;
+      this.retryDelay = Math.min(this.retryDelay * 1.4, 1500);
+    } else {
+      this.retryDelay = Math.min(this.retryDelay * 1.5, 8000);
+    }
   }
 
+  /**
+   * Force reconnect — called on visibility change / online event.
+   * Always kills old socket (iOS lies about socket state after resume).
+   */
   forceReconnect() {
     if (this.destroyed) return;
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      // Already connected, just re-announce
-      this.send({ type: "device-hello", device: this.device });
-      return;
-    }
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
-    this.retryDelay = 1000;
+    this.retryDelay = 500;
+    this.burstAttempts = 0;
     this.connect();
   }
 
