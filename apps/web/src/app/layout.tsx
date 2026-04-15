@@ -28,6 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem("oto-theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark")}})()`,
+          }}
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100;0,300;0,400;0,500;0,600;0,700;1,100;1,300;1,400;1,500;1,600;1,700&display=swap"
           rel="stylesheet"
@@ -37,7 +42,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="OTOSend" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className="min-h-full flex flex-col bg-white text-[#1c1c1c]" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {children}
       </body>
     </html>

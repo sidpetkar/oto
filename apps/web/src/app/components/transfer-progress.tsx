@@ -20,19 +20,22 @@ export function TransferProgress({ transfers, onClose, onCancel }: TransferProgr
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50"
+      className="fixed inset-0 flex items-center justify-center z-50 px-4"
+      style={{ backgroundColor: "var(--c-backdrop)" }}
     >
-      <div ref={panelRef} className="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6">
-        {/* Drag handle */}
-        <div className="w-10 h-1 bg-[#e0e0e0] rounded-full mx-auto mb-5 sm:hidden" />
-
+      <div
+        ref={panelRef}
+        className="w-full max-w-md rounded-[2rem] p-6"
+        style={{ backgroundColor: "var(--c-bg)" }}
+      >
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-medium text-lg">
             {allDone ? "Transfer Complete" : allWaiting ? "Waiting for Accept..." : "Transferring..."}
           </h2>
           <button
             onClick={close}
-            className="w-8 h-8 rounded-full bg-[#f0f0f0] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+            style={{ backgroundColor: "var(--c-bg-overlay)" }}
           >
             <X className="w-4 h-4" />
           </button>
@@ -46,19 +49,19 @@ export function TransferProgress({ transfers, onClose, onCancel }: TransferProgr
                 {t.status === "complete" ? (
                   <Check className="w-4 h-4 text-green-600 shrink-0" />
                 ) : t.status === "waiting" ? (
-                  <Clock className="w-4 h-4 text-[#999] shrink-0" />
+                  <Clock className="w-4 h-4 shrink-0" style={{ color: "var(--c-text-muted)" }} />
                 ) : (
-                  <span className="text-xs text-[#999] shrink-0">
+                  <span className="text-xs shrink-0" style={{ color: "var(--c-text-muted)" }}>
                     {t.speed > 0 ? formatSpeed(t.speed) : ""}
                   </span>
                 )}
               </div>
-              <div className="w-full h-2 bg-[#f0f0f0] rounded-full overflow-hidden">
+              <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--c-bg-overlay)" }}>
                 <div
                   className="h-full rounded-full transition-all duration-300 ease-out"
                   style={{
                     width: `${t.status === "waiting" ? 0 : Math.min(100, t.progress)}%`,
-                    backgroundColor: t.status === "complete" ? "#22c55e" : "#1c1c1c",
+                    backgroundColor: t.status === "complete" ? "#22c55e" : "var(--c-accent)",
                   }}
                 />
               </div>
@@ -67,14 +70,14 @@ export function TransferProgress({ transfers, onClose, onCancel }: TransferProgr
         </div>
 
         {allWaiting && (
-          <div className="flex items-center justify-center gap-2 text-sm text-[#999]">
+          <div className="flex items-center justify-center gap-2 text-sm" style={{ color: "var(--c-text-muted)" }}>
             <Loader2 className="w-4 h-4 animate-spin" />
             Waiting for receiver to accept...
           </div>
         )}
 
         {!allDone && !allWaiting && (
-          <div className="flex items-center justify-center gap-2 text-sm text-[#999]">
+          <div className="flex items-center justify-center gap-2 text-sm" style={{ color: "var(--c-text-muted)" }}>
             <Loader2 className="w-4 h-4 animate-spin" />
             Sending...
           </div>
@@ -83,7 +86,8 @@ export function TransferProgress({ transfers, onClose, onCancel }: TransferProgr
         {allDone && (
           <button
             onClick={close}
-            className="w-full py-3.5 rounded-3xl bg-[#1c1c1c] text-white font-medium text-sm hover:bg-[#333] transition-colors"
+            className="w-full py-3.5 rounded-3xl font-medium text-sm transition-colors"
+            style={{ backgroundColor: "var(--c-accent)", color: "var(--c-on-accent)" }}
           >
             Done
           </button>

@@ -31,16 +31,15 @@ export function SendModal({ peer, onSend, onClose }: SendModalProps) {
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50"
+      className="fixed inset-0 flex items-center justify-center z-50 px-4"
+      style={{ backgroundColor: "var(--c-backdrop)" }}
       onClick={(e) => { if (e.target === e.currentTarget) close(); }}
     >
       <div
         ref={panelRef}
-        className="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6 max-h-[85vh] flex flex-col"
+        className="w-full max-w-md rounded-[2rem] p-6 max-h-[85vh] flex flex-col"
+        style={{ backgroundColor: "var(--c-bg)" }}
       >
-        {/* Drag handle */}
-        <div className="w-10 h-1 bg-[#e0e0e0] rounded-full mx-auto mb-5 sm:hidden" />
-
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -52,12 +51,13 @@ export function SendModal({ peer, onSend, onClose }: SendModalProps) {
             </div>
             <div>
               <p className="font-medium text-sm">Send to {peer.otterName}</p>
-              <p className="text-xs text-[#999]">{peer.platform}</p>
+              <p className="text-xs" style={{ color: "var(--c-text-muted)" }}>{peer.platform}</p>
             </div>
           </div>
           <button
             onClick={close}
-            className="w-8 h-8 rounded-full bg-[#f0f0f0] flex items-center justify-center hover:bg-[#e0e0e0] transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+            style={{ backgroundColor: "var(--c-bg-overlay)" }}
           >
             <X className="w-4 h-4" />
           </button>
@@ -68,22 +68,27 @@ export function SendModal({ peer, onSend, onClose }: SendModalProps) {
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => inputRef.current?.click()}
-          className="border-2 border-dashed border-[#e0e0e0] rounded-3xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#1c1c1c] hover:bg-[#fafafa] transition-all mb-4"
+          className="border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all mb-4"
+          style={{ borderColor: "var(--c-border-strong)" }}
         >
-          <Upload className="w-8 h-8 text-[#999] mb-2" />
-          <p className="text-sm text-[#999]">Drop files or tap to select</p>
+          <Upload className="w-8 h-8 mb-2" style={{ color: "var(--c-text-muted)" }} />
+          <p className="text-sm" style={{ color: "var(--c-text-muted)" }}>Drop files or tap to select</p>
           <input ref={inputRef} type="file" multiple onChange={handleFiles} className="hidden" />
         </div>
 
         {/* File list */}
         {files.length > 0 && (
-          <div className="flex-1 overflow-y-auto mb-4 border border-[#f0f0f0] rounded-3xl">
+          <div className="flex-1 overflow-y-auto mb-4 border rounded-3xl" style={{ borderColor: "var(--c-border)" }}>
             {files.map((f, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-[#f0f0f0] last:border-0">
-                <FileIcon className="w-5 h-5 text-[#999] shrink-0" />
+              <div
+                key={i}
+                className="flex items-center gap-3 px-4 py-3 last:border-0"
+                style={{ borderBottomWidth: "1px", borderBottomColor: "var(--c-border)" }}
+              >
+                <FileIcon className="w-5 h-5 shrink-0" style={{ color: "var(--c-text-muted)" }} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm truncate">{f.name}</p>
-                  <p className="text-xs text-[#999]">{formatSize(f.size)} · {f.type.split("/").pop() || "file"}</p>
+                  <p className="text-xs" style={{ color: "var(--c-text-muted)" }}>{formatSize(f.size)} · {f.type.split("/").pop() || "file"}</p>
                 </div>
               </div>
             ))}
@@ -94,7 +99,8 @@ export function SendModal({ peer, onSend, onClose }: SendModalProps) {
         <button
           onClick={() => onSend(files)}
           disabled={files.length === 0}
-          className="w-full py-3.5 rounded-3xl bg-[#1c1c1c] text-white font-medium text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#333] transition-colors"
+          className="w-full py-3.5 rounded-3xl font-medium text-sm disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          style={{ backgroundColor: "var(--c-accent)", color: "var(--c-on-accent)" }}
         >
           {files.length === 0
             ? "Select files to send"

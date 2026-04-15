@@ -1,28 +1,11 @@
 "use client";
 
 import type { DeviceInfo } from "@oto/protocol";
-import { Monitor, Smartphone, Globe, Laptop } from "lucide-react";
 
 interface RadarProps {
   self: DeviceInfo;
   peers: DeviceInfo[];
   onPeerClick: (peer: DeviceInfo) => void;
-}
-
-function PlatformIcon({ platform }: { platform: string }) {
-  const cls = "w-4 h-4 text-[#1c1c1c]";
-  switch (platform) {
-    case "android":
-    case "ios":
-      return <Smartphone className={cls} />;
-    case "windows":
-    case "linux":
-      return <Monitor className={cls} />;
-    case "mac":
-      return <Laptop className={cls} />;
-    default:
-      return <Globe className={cls} />;
-  }
 }
 
 function getPeerPosition(index: number, total: number) {
@@ -38,15 +21,27 @@ function getPeerPosition(index: number, total: number) {
   };
 }
 
+function DeviceCircle({ name, color }: { name: string; color: string }) {
+  return (
+    <div
+      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-base shadow-md"
+      style={{ backgroundColor: color }}
+    >
+      {name[0]}
+    </div>
+  );
+}
+
 export function Radar({ self, peers, onPeerClick }: RadarProps) {
   return (
     <div className="relative w-full max-w-[400px] mx-auto aspect-square">
-      {/* 4 ripple rings — constant speed, evenly spaced, loop from center outward */}
+      {/* 4 ripple rings */}
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="absolute rounded-full border border-[#1c1c1c]/40 radar-ring"
+          className="absolute rounded-full radar-ring"
           style={{
+            border: "1.5px solid var(--c-radar-ring)",
             width: "100%",
             height: "100%",
             left: "50%",
@@ -58,20 +53,18 @@ export function Radar({ self, peers, onPeerClick }: RadarProps) {
 
       {/* Self in center */}
       <div
-        className="absolute flex flex-col items-center gap-1 z-10"
+        className="absolute flex flex-col items-center gap-1.5 z-10"
         style={{
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
         }}
       >
-        <div
-          className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg"
-          style={{ backgroundColor: self.avatarColor || "#f4d03f" }}
+        <DeviceCircle name={self.otterName} color={self.avatarColor || "#f4d03f"} />
+        <span
+          className="text-xs whitespace-nowrap"
+          style={{ fontWeight: 300, color: "var(--c-text-dim)" }}
         >
-          {self.otterName[0]}
-        </div>
-        <span className="text-[10px] font-medium text-[#666] whitespace-nowrap">
           {self.otterName}
         </span>
       </div>
@@ -83,22 +76,22 @@ export function Radar({ self, peers, onPeerClick }: RadarProps) {
           <button
             key={peer.id}
             onClick={() => onPeerClick(peer)}
-            className="absolute flex flex-col items-center gap-1 z-10 group"
+            className="absolute flex flex-col items-center gap-1.5 z-10 group"
             style={{
               left: pos.left,
               top: pos.top,
               transform: "translate(-50%, -50%)",
             }}
           >
-            {/* Float wrapper — animates only Y so positioning is not disturbed */}
             <div
-              className="flex flex-col items-center gap-1 device-float"
+              className="flex flex-col items-center gap-1.5 device-float"
               style={{ animationDelay: `${i * 0.4}s` }}
             >
-              <div className="w-10 h-10 rounded-full bg-white border-2 border-[#e8e8e8] flex items-center justify-center shadow-sm group-hover:border-[#1c1c1c] group-hover:shadow-md transition-all">
-                <PlatformIcon platform={peer.platform} />
-              </div>
-              <span className="text-[10px] font-medium text-[#999] group-hover:text-[#1c1c1c] transition-colors">
+              <DeviceCircle name={peer.otterName} color={peer.avatarColor || "#999"} />
+              <span
+                className="text-xs whitespace-nowrap transition-colors"
+                style={{ fontWeight: 300, color: "var(--c-text-muted)" }}
+              >
                 {peer.otterName}
               </span>
             </div>

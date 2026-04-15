@@ -29,11 +29,11 @@ function timeAgo(ts: number): string {
 }
 
 function FileIcon({ type }: { type: string }) {
-  const cls = "w-5 h-5 text-[#999]";
-  if (type.startsWith("image/")) return <Image className={cls} />;
-  if (type.startsWith("video/")) return <FileVideo className={cls} />;
-  if (type.includes("text") || type.includes("pdf")) return <FileText className={cls} />;
-  return <File className={cls} />;
+  const style = { color: "var(--c-text-muted)" };
+  if (type.startsWith("image/")) return <Image className="w-5 h-5" style={style} />;
+  if (type.startsWith("video/")) return <FileVideo className="w-5 h-5" style={style} />;
+  if (type.includes("text") || type.includes("pdf")) return <FileText className="w-5 h-5" style={style} />;
+  return <File className="w-5 h-5" style={style} />;
 }
 
 function isMedia(type: string) {
@@ -43,14 +43,14 @@ function isMedia(type: string) {
 function FilePreview({ file, onClick }: { file: ReceivedFile; onClick?: () => void }) {
   if (file.type.startsWith("image/")) {
     return (
-      <button onClick={onClick} className="w-12 h-12 rounded-2xl overflow-hidden bg-[#f0f0f0] shrink-0">
+      <button onClick={onClick} className="w-12 h-12 rounded-2xl overflow-hidden shrink-0" style={{ backgroundColor: "var(--c-bg-overlay)" }}>
         <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
       </button>
     );
   }
   if (file.type.startsWith("video/")) {
     return (
-      <button onClick={onClick} className="w-12 h-12 rounded-2xl overflow-hidden bg-[#f0f0f0] shrink-0 relative">
+      <button onClick={onClick} className="w-12 h-12 rounded-2xl overflow-hidden shrink-0 relative" style={{ backgroundColor: "var(--c-bg-overlay)" }}>
         <video src={file.url} className="w-full h-full object-cover" muted />
         <div className="absolute inset-0 flex items-center justify-center bg-black/30">
           <span className="text-white text-[10px] font-bold">PLAY</span>
@@ -59,7 +59,7 @@ function FilePreview({ file, onClick }: { file: ReceivedFile; onClick?: () => vo
     );
   }
   return (
-    <div className="w-12 h-12 rounded-2xl bg-[#f0f0f0] flex items-center justify-center shrink-0">
+    <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--c-bg-overlay)" }}>
       <FileIcon type={file.type} />
     </div>
   );
@@ -84,7 +84,6 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [closing, setClosing] = useState(false);
 
-  // Slide out then call onClose
   const handleClose = () => {
     setClosing(true);
   };
@@ -112,26 +111,29 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
   return (
     <>
       <div
-        className={`fixed inset-0 bg-white z-50 flex flex-col max-w-md mx-auto w-full ${
+        className={`fixed inset-0 z-50 flex flex-col max-w-md mx-auto w-full ${
           closing ? "page-slide-out" : "page-slide-in"
         }`}
+        style={{ backgroundColor: "var(--c-bg)" }}
       >
-        {/* Header — matches main header px-4 py-4 */}
-        <header className="flex items-center justify-between px-4 py-4 border-b border-[#f0f0f0]">
+        {/* Header */}
+        <header
+          className="flex items-center justify-between px-4 py-4"
+          style={{ borderBottomWidth: "1px", borderBottomColor: "var(--c-border)" }}
+        >
           <div className="flex items-center gap-3">
             <button
               onClick={handleClose}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f0f0f0] transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              {/* Extra-thin title */}
-              <h1 className="text-base leading-snug font-normal text-[#1c1c1c]">
+              <h1 className="text-base leading-snug font-normal">
                 Received
               </h1>
               {files.length > 0 && (
-                <p className="text-xs text-[#999] mt-0.5">
+                <p className="text-xs mt-0.5" style={{ color: "var(--c-text-muted)" }}>
                   {files.length} file{files.length !== 1 ? "s" : ""} · {formatSize(totalSize)}
                 </p>
               )}
@@ -140,7 +142,8 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
           {files.length > 0 && (
             <button
               onClick={onClear}
-              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-colors text-[#999]"
+              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-colors"
+              style={{ color: "var(--c-text-muted)" }}
               title="Clear all"
             >
               <Trash2 className="w-4 h-4" />
@@ -150,11 +153,11 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
 
         {files.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3">
-            <div className="w-16 h-16 rounded-full bg-[#f0f0f0] flex items-center justify-center">
-              <Inbox className="w-7 h-7 text-[#ccc]" />
+            <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--c-bg-overlay)" }}>
+              <Inbox className="w-7 h-7" style={{ color: "var(--c-text-faint)" }} />
             </div>
-            <p className="text-sm text-[#999]">No files received yet</p>
-            <p className="text-xs text-[#ccc]">Files sent to you will appear here</p>
+            <p className="text-sm" style={{ color: "var(--c-text-muted)" }}>No files received yet</p>
+            <p className="text-xs" style={{ color: "var(--c-text-faint)" }}>Files sent to you will appear here</p>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto">
@@ -162,7 +165,8 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
               {files.map((file) => (
                 <div
                   key={file.id}
-                  className="flex items-center gap-3 p-3 rounded-3xl bg-[#fafafa] hover:bg-[#f0f0f0] transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-3xl transition-colors"
+                  style={{ backgroundColor: "var(--c-bg-raised)" }}
                 >
                   <FilePreview
                     file={file}
@@ -170,14 +174,15 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{file.name}</p>
-                    <p className="text-xs text-[#999]">
+                    <p className="text-xs" style={{ color: "var(--c-text-muted)" }}>
                       {formatSize(file.size)} · from {file.from}
                     </p>
-                    <p className="text-[10px] text-[#ccc]">{timeAgo(file.timestamp)}</p>
+                    <p className="text-[10px]" style={{ color: "var(--c-text-faint)" }}>{timeAgo(file.timestamp)}</p>
                   </div>
                   <button
                     onClick={() => handleDownload(file)}
-                    className="w-10 h-10 rounded-full bg-[#1c1c1c] text-white flex items-center justify-center hover:bg-[#333] transition-colors shrink-0"
+                    className="w-10 h-10 rounded-full flex items-center justify-center transition-colors shrink-0"
+                    style={{ backgroundColor: "var(--c-accent)", color: "var(--c-on-accent)" }}
                     title="Download"
                   >
                     <Download className="w-4 h-4" />
@@ -189,11 +194,12 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
         )}
 
         {files.length > 0 && (
-          <div className="px-4 py-4 border-t border-[#f0f0f0] space-y-2">
+          <div className="px-4 py-4 space-y-2" style={{ borderTopWidth: "1px", borderTopColor: "var(--c-border)" }}>
             {latestBatch.length > 1 && (
               <button
                 onClick={() => latestBatch.forEach(handleDownload)}
-                className="w-full py-3 rounded-3xl bg-[#f0f0f0] text-[#1c1c1c] font-medium text-sm hover:bg-[#e0e0e0] transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-3xl font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                style={{ backgroundColor: "var(--c-bg-overlay)", color: "var(--c-text)" }}
               >
                 <Download className="w-4 h-4" />
                 Download Latest Batch ({latestBatch.length})
@@ -201,7 +207,8 @@ export function ReceivedFiles({ files, onClose, onClear }: ReceivedFilesProps) {
             )}
             <button
               onClick={() => files.forEach(handleDownload)}
-              className="w-full py-3.5 rounded-3xl bg-[#1c1c1c] text-white font-medium text-sm hover:bg-[#333] transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-3xl font-medium text-sm transition-colors flex items-center justify-center gap-2"
+              style={{ backgroundColor: "var(--c-accent)", color: "var(--c-on-accent)" }}
             >
               <Download className="w-4 h-4" />
               Download All ({files.length} file{files.length !== 1 ? "s" : ""})

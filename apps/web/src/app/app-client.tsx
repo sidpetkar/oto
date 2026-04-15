@@ -13,6 +13,7 @@ import { ReceivePrompt } from "./components/receive-prompt";
 import { TransferProgress } from "./components/transfer-progress";
 import { PinDialog } from "./components/pin-dialog";
 import { ReceivedFiles, type ReceivedFile } from "./components/received-files";
+import { Sidebar } from "./components/sidebar";
 
 function storedToReceived(s: StoredFile): ReceivedFile {
   return {
@@ -38,13 +39,13 @@ export default function AppClient() {
   const [showTransfers, setShowTransfers] = useState(false);
   const [receivedFiles, setReceivedFiles] = useState<ReceivedFile[]>([]);
   const [showReceived, setShowReceived] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [incomingOffer, setIncomingOffer] = useState<{
     sender: DeviceInfo;
     files: FileMetadata[];
     sessionId: string;
   } | null>(null);
 
-  // Keep screen awake while app is connected or transferring
   useWakeLock(connected || showTransfers);
 
   const peerRef = useRef<WebRTCPeer | null>(null);
@@ -63,7 +64,6 @@ export default function AppClient() {
       .catch(() => {});
   }, []);
 
-  // Auto-join PIN from URL (QR code flow)
   const autoJoinedRef = useRef(false);
   useEffect(() => {
     if (!device || !connected || autoJoinedRef.current) return;
@@ -73,7 +73,6 @@ export default function AppClient() {
       autoJoinedRef.current = true;
       joinPin(urlPin);
       setShowPinJoin(false);
-      // Clean URL without reload
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, [device, connected, joinPin]);
@@ -277,9 +276,9 @@ export default function AppClient() {
       <div className="flex flex-col items-center justify-center h-screen overflow-hidden">
         <span className="text-xl tracking-tight italic leading-none">
           <span style={{ fontWeight: 500 }}>OTO</span>
-          <span style={{ fontWeight: 100 }} className="text-[#aaaaaa]">Send</span>
+          <span style={{ fontWeight: 100, color: "var(--c-text-secondary)" }}>Send</span>
         </span>
-        <p className="text-sm text-[#999] mt-2">Initializing...</p>
+        <p className="text-sm mt-2" style={{ color: "var(--c-text-muted)" }}>Initializing...</p>
       </div>
     );
   }
@@ -290,27 +289,19 @@ export default function AppClient() {
         connectionStatus={connectionStatus}
         receivedCount={receivedFiles.length}
         onReceivedClick={() => setShowReceived(true)}
+        onMenuClick={() => setShowSidebar(true)}
       />
 
       <div className="flex-1 flex items-center justify-center px-4">
         <Radar self={device} peers={peers} onPeerClick={handlePeerClick} />
       </div>
 
-      {/* Bottom actions */}
-      <div className="px-4 pb-6 flex gap-3">
-        <button
-          onClick={handleCreatePin}
-          className="flex-1 py-3 rounded-3xl bg-[#1c1c1c] text-white text-sm hover:bg-[#333] transition-colors"
-        >
-          Create Drop
-        </button>
-        <button
-          onClick={() => setShowPinJoin(true)}
-          className="flex-1 py-3 rounded-3xl bg-[#f0f0f0] text-[#1c1c1c] text-sm hover:bg-[#e0e0e0] transition-colors"
-        >
-          Join Drop
-        </button>
-      </div>
+      <Sidebar
+        open={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        onCreateDrop={handleCreatePin}
+        onJoinDrop={() => setShowPinJoin(true)}
+      />
 
       {showSendModal && selectedPeer && (
         <SendModal
@@ -370,12 +361,16 @@ export default function AppClient() {
       )}
 
       {matchedPeer && showPinCreate && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#1c1c1c] text-white px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 z-50 shadow-lg">
+        <div
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 z-50 shadow-lg"
+          style={{ backgroundColor: "var(--c-accent)", color: "var(--c-on-accent)" }}
+        >
           <span className="w-2 h-2 rounded-full bg-green-500" />
           Connected to {matchedPeer.peer.otterName}
           <button
             onClick={handlePinMatchSend}
-            className="ml-2 px-3 py-1 bg-white text-[#1c1c1c] rounded-lg text-xs font-medium"
+            className="ml-2 px-3 py-1 rounded-lg text-xs font-medium"
+            style={{ backgroundColor: "var(--c-bg)", color: "var(--c-text)" }}
           >
             Send Files
           </button>
